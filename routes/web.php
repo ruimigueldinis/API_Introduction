@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PayPalController;
 // use Illuminate\Http\Client\Request;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,17 @@ Route::get('form-bandeira', function( ){
 // Requisição HTTP, contém dados enviados pelo form.
 Route::post('form-bandeira', function(Request $request ){
     return view('bandeira.form-bandeira', ['codigo' => strtoupper($request->input('pais'))]);
+});
+
+
+// Requisição PayPal
+
+Route::prefix('transaction')->name('transaction.')->group(function () {
+    Route::get('/', [PayPalController::class, 'createTransaction'])->name('create');
+    Route::get('/process', [PayPalController::class, 'processTransaction'])->name('process');
+    Route::get('/success', [PayPalController::class, 'successTransaction'])->name('success');
+    Route::get('/cancel', [PayPalController::class, 'cancelTransaction'])->name('cancel');
+    Route::get('/finish', [PayPalController::class, 'finishTransaction'])->name('finish');
 });
 
 

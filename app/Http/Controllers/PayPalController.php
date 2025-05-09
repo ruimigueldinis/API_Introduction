@@ -33,8 +33,8 @@ class PayPalController extends Controller
     public function processTransaction()
     {
          $response = $this->payPalService->createOrder(
-            route('successTransaction'),
-            route('cancelTransaction')
+            route('transaction.success'),
+            route('transaction.cancel')
         );
 
         if (isset($response['id']) && $response['id'] != null) {
@@ -45,11 +45,11 @@ class PayPalController extends Controller
                 }
             }
             logger()->error('Erro ao processar a transação - Links não encontrados ou formato inesperado', ['response' => $response]);
-            return redirect()->route('createTransaction')->with('error', 'Algo deu errado.');
+            return redirect()->route('transaction.create')->with('error', 'Algo deu errado.');
         } else {
             logger()->error('Erro na criação da ordem de pagamento', ['response' => $response]);
 
-            return redirect()->route('createTransaction')->with('error', $response['message'] ?? 'Algo deu errado.');
+            return redirect()->route('transaction.create')->with('error', $response['message'] ?? 'Algo deu errado.');
         }
     }
     /**
@@ -64,7 +64,7 @@ class PayPalController extends Controller
         // Alternativa a linha 63 seria acessar a query string
         //$token = $request['token'];
         if (!$token) {
-            return redirect()->route('cancelTransaction')->with('error', 'Token do PayPal não encontrado.');
+            return redirect()->route('transaction.cancel')->with('error', 'Token do PayPal não encontrado.');
         }
 
         $response = $this->payPalService->capturePaymentOrder($token);
@@ -78,14 +78,14 @@ class PayPalController extends Controller
             // Redireciona para a rota de finalização com os dados de sucesso
             //Duas alternativas:
             //return redirect()->route('finishTransaction')->with('success', "Pagamento Realizado! Valor: $amount, pago por: $payerName.");
-            return redirect()->route('finishTransaction', [
+            return redirect()->route('transaction.finish', [
                 'amount' => $amount,
                 'payer' => $payerName,
             ]);
         } else {
             //diferente de withError que usamos no Recaptcha: $message só existe automaticamente dentro de @error().
             //Para mensagens comuns com with(), você acessa com session('chave'); adicionamos uma mensagem simples à sessão, com a chave 'error'
-            return redirect()->route('createTransaction')->with('error', $response['message'] ?? 'Algo deu errado.');
+            return redirect()->route('transaction.create')->with('error', $response['message'] ?? 'Algo deu errado.');
         }
     }
 
@@ -97,7 +97,7 @@ class PayPalController extends Controller
     public function cancelTransaction(Request $request)
     {
         return redirect()
-            ->route('createTransaction')
+            ->route('transaction.create')
             ->with('error', $response['message'] ?? 'O utilizador cancelou a operação.');
     }
 
